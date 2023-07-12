@@ -16,7 +16,7 @@ class CommentListView(APIView):
             return Response({"detail": "missing fields ['prompt']"}, status=status.HTTP_400_BAD_REQUEST)
         if not Prompt.objects.filter(id=prompt_id).exists():
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-        comments = Comment.objects.filter(post_id=prompt_id)
+        comments = Comment.objects.filter(prompt_id=prompt_id)
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -30,7 +30,7 @@ class CommentListView(APIView):
             return Response({"detail": "missing fields ['prompt', 'content']"}, status=status.HTTP_400_BAD_REQUEST)
         if not Prompt.objects.filter(id=prompt_id).exists():
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-        comment = Comment.objects.create(post_id=prompt_id, author=author, content=content)
+        comment = Comment.objects.create(prompt_id=prompt_id, author=author, content=content)
         serializer = CommentSerializer(comment)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
