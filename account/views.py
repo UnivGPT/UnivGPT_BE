@@ -23,3 +23,16 @@ class SignupView(APIView):
         
         serialized_data = generate_token_in_serialized_data(user)
         return Response(serialized_data, status=status.HTTP_201_CREATED)
+    
+class SigninView(APIView):
+    def post(self, request):
+        try:
+            user = User.objects.get(
+                email = request.data['email'],
+                password = request.data['password']
+            )
+        except:
+            return Response({"detail": "이메일 또는 비밀번호를 확인해주세요."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serialized_data = generate_token_in_serialized_data(user)
+        return Response(serialized_data, status=status.HTTP_200_OK)
