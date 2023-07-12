@@ -52,7 +52,7 @@ class PromptDetailView(APIView):
         try:
             prompt = Prompt.objects.get(id = prompt_id)
         except:
-            if not prompt.request.title or prompt.request.description:
+            if not prompt.request.title or not prompt.request.description:
                 return Response({"detail": "[title, description] fields missing."})
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         prompt.title = request.data.get('title') or prompt.title
