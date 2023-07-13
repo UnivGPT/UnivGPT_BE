@@ -24,4 +24,16 @@ class InputListView(APIView):
         inputs = Input.objects.filter(prompt_id=prompt_id)
         serializer = InputSerializer(inputs, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
+    
+class InputDetailView(APIView):
+    def delete(self, request, prompt_id):
+        if not request.user.is_authenticated:
+            return Response({"detail": "Authentication denied"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        try:
+            input = Input.objects.get(id=prompt_id)
+        except:
+            return Response({"detail": "Input Not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        input.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
