@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import User
+from django.contrib.auth.models import User
 from .serializers import UserSerializer
 
 from rest_framework import status
@@ -16,21 +16,14 @@ def set_token_on_response_cookie(user: User) -> Response:
     res.set_cookie('access_token', value=str(token.access_token), httponly=True)
     return res
 
-# Create your views here.
+# Create your views here.   
 class SignupView(APIView):
     def post(self, request):
-        user_serializer = UserSerializer(data = request.data)
-        if user_serializer.is_valid(raise_exception=True):
-            user = user_serializer.save()
-        return set_token_on_response_cookie(user)
-    
-class SignupView(APIView):
-    def post(self, request):
-        email = request.data.get('email', '')
+        email = request.data.get('email')
         username = email.split('@')[0]  # 이메일에서 @ 앞부분을 사용하여 사용자 이름 생성
 
         # request.data에 username 추가
-        request.data['username'] = username
+        #request.data['username'] = username
 
         user_serializer = UserSerializer(data=request.data)
         if user_serializer.is_valid(raise_exception=True):
