@@ -36,3 +36,10 @@ class SigninView(APIView):
 
         serialized_data = generate_token_in_serialized_data(user)
         return Response(serialized_data, status=status.HTTP_200_OK)
+
+class LogoutView(APIView):
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+        RefreshToken(request.data['refresh']).blacklist()
+        return Response(status=status.HTTP_204_NO_CONTENT)
