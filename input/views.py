@@ -31,7 +31,7 @@ class InputListView(APIView):
     def get(self, request):
         prompt_id = request.GET.get('prompt')
         if not prompt_id:
-            return Response({"detail": "missing fileds ['prompt']"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "missing fields ['prompt']"}, status=status.HTTP_400_BAD_REQUEST)
         
         if not Prompt.objects.filter(id=prompt_id).exists():
             return Response({"detail": "No prompts found."}, status=status.HTTP_404_NOT_FOUND)
