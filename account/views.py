@@ -63,3 +63,19 @@ class TokenRefreshView(APIView):
             new_access_token = str(token)
         response = Response({"detail": "token refreshed"}, status=status.HTTP_200_OK)
         return response.set_cookie('access_token', value=str(new_access_token), httponly=True)
+    
+class UserInfoView(APIView):
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+        user = request.user
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def patch(self, request):
+        user = request.user
+        user_serializer = UserSerializer(user, data=request.data, partial=True)
+        if not user_serializer.is_valid(raise_exception=True):
+            return Response({"detail": "user data validation error"}, status=status.HTTP_400_BAD_REQUEST)
+        user_serializer.save()
+        return Response(user_serializer.data, status=status.HTTP_200_OK)
