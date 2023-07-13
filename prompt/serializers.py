@@ -9,3 +9,4 @@ class PromptSerializer(ModelSerializer):
     class Meta:
         model = Prompt
         fields = "__all__"
+
