@@ -13,7 +13,7 @@ class OptionListView(APIView):
     def get(self, request):
         input_id = request.GET.get('input')
         if not input_id:
-            return Response({"detail": "missing fields ['prompt']"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "missing fields ['input']"}, status=status.HTTP_400_BAD_REQUEST)
         if not Input.objects.filter(id=input_id).exists():
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         options = Option.objects.filter(input=input_id)
