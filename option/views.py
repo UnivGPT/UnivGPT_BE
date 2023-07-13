@@ -5,6 +5,7 @@ from rest_framework import status
 
 from .models import Option
 from input.models import Input
+from prompt.models import Prompt
 from .serializers import OptionSerializer
 
 # Create your views here.
@@ -43,6 +44,11 @@ class OptionDetailView(APIView):
             option = Option.objects.get(id=option_id)
         except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        user = request.user
+        prompt = Prompt.objects.get(id=user.id)
+        if user != prompt.author:
+            return Response({"detail": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
         
         option.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
