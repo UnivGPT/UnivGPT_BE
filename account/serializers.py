@@ -12,3 +12,8 @@ class UserSerializer(ModelSerializer):
         password = attrs.get('password', '')
         if not (email and password):
             raise ValidationError({"detail": "[email, password] fields missing."})
+
+class UserIdUsernameSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username"]
