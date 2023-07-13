@@ -24,6 +24,20 @@ class SignupView(APIView):
             user = user_serializer.save()
         return set_token_on_response_cookie(user)
     
+class SignupView(APIView):
+    def post(self, request):
+        email = request.data.get('email', '')
+        username = email.split('@')[0]  # 이메일에서 @ 앞부분을 사용하여 사용자 이름 생성
+
+        # request.data에 username 추가
+        request.data['username'] = username
+
+        user_serializer = UserSerializer(data=request.data)
+        if user_serializer.is_valid(raise_exception=True):
+            user = user_serializer.save()
+        return set_token_on_response_cookie(user)
+
+    
 class SigninView(APIView):
     def post(self, request):
         try:
