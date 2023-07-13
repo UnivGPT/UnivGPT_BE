@@ -11,7 +11,22 @@ from .serializers import InputSerializer
 # Create your views here.
 class InputListView(APIView):
     def post(self, request):
-        pass
+        name = request.data.get('name')
+        type = request.data.get('type')
+        options = request.data.get('options')
+        content = request.data.get('content')
+        prompt = request.data.get('prompt')
+
+        if not request.user.is_authenticated:
+          return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        if not Prompt.objects.filter(id=prompt).exists():
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        input = Input.objects.create(name=name, type=type, options=options, content=content, prompt=prompt)
+        serializer = InputSerializer(input)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
     
     def get(self, request):
         prompt_id = request.GET.get('prompt')
