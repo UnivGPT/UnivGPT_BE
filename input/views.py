@@ -49,6 +49,11 @@ class InputDetailView(APIView):
             input = Input.objects.get(id=prompt_id)
         except:
             return Response({"detail": "Input Not found."}, status=status.HTTP_404_NOT_FOUND)
+        prompt = Prompt.objects.get(id=prompt_id)
+        if request.user != prompt.author:
+            return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
+
         
         input.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
