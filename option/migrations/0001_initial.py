@@ -9,18 +9,16 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('prompt', '0001_initial'),
+        ('input', '0001_initial'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Input',
+            name='Option',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=16)),
-                ('type', models.IntegerField(default=1)),
-                ('content', models.TextField()),
-                ('prompt', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='prompt.prompt')),
+                ('input', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='input.input')),
             ],
         ),
     ]
