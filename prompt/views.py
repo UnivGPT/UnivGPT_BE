@@ -34,7 +34,7 @@ class PromptListView(APIView):
         prompt = Prompt.objects.create(title=title, description=description, content=content, view=0, author=author)
 
         prompt.category.clear()
-        #의도 불확실..
+
         for category in categories:
             if not Category.objects.filter(name=category).exists():
                 prompt.category.add(Category.objects.get(name=category))
