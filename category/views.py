@@ -18,11 +18,11 @@ class CategoryListView(APIView):
     def post(self, request):
         if not request.user.is_authenticated:
             return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
+        if not request.user.data.is_superuser:
+            return Response({"detail": "not a superuser"}, status=status.HTTP_401_UNAUTHORIZED)
         name = request.data.get('name')
         if not name:
             return Response({"detail": "missing fields ['name']"}, status=status.HTTP_400_BAD_REQUEST)
-        if not request.user.is_superuser:
-            return Response({"detail": "not a superuser"}, status=status.HTTP_401_UNAUTHORIZED)
         if Category.objects.filter(name=name).exists():
             return Response({"detail" : "Category with same name already exists"}, status=status.HTTP_409_CONFLICT)
         category = Category.objects.create(name=name)
