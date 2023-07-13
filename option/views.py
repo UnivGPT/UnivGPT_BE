@@ -8,16 +8,6 @@ from input.models import Input
 from .serializers import OptionSerializer
 
 # Create your views here.
-#class OptionListView(APIView):
-#     def get(self, request):
-#         # prompt_id = request.GET.get('prompt')
-#         # if not prompt_id:
-#         #     return Response({"detail": "missing fields ['prompt']"}, status=status.HTTP_400_BAD_REQUEST)
-#         # if not Prompt.objects.filter(id=prompt_id).exists():
-#         #     return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-#         # comments = Comment.objects.filter(prompt_id=prompt_id)
-#         # serializer = CommentSerializer(comments, many=True)
-#         # return Response(serializer.data, status=status.HTTP_200_OK)
 
 class OptionListView(APIView):
     def get(self, request):
@@ -43,22 +33,22 @@ class OptionListView(APIView):
         serializer = OptionSerializer(option)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
+
+class OptionDetailView(APIView):
+    def delete(self, request, option_id):
+        if not request.user.is_authenticated:
+          return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        try:
+            option = Option.objects.get(id=option_id)
+        except:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        option.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     
 # class OptionDetailView(APIView):
-#     def delete(self, request, comment_id):
-#         if not request.user.is_authenticated:
-#             return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
-        
-#         try:
-#             comment = Comment.objects.get(id=comment_id)
-#         except:
-#             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-
-#         if request.user != comment.author:
-#             return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
-
-#         comment.delete()
-#         return Response(status=status.HTTP_204_NO_CONTENT)
 
 # def patch(self, request):
 #         user = request.user
