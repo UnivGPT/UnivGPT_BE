@@ -9,11 +9,12 @@ from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 
 def set_token_on_response_cookie(user: User) -> Response:
     token = RefreshToken.for_user(user)
-    user = User.objects.get(user=user)
+    user = User.objects.get(username=user)
+    print("Found user", user)
     user_serializer = UserSerializer(user)
     res = Response(user_serializer.data, status=status.HTTP_200_OK)
-    res.set_cookie('refresh_token', value=str(token), httponly=True)
-    res.set_cookie('access_token', value=str(token.access_token), httponly=True)
+    res.set_cookie('refresh_token', value=str(token))
+    res.set_cookie('access_token', value=str(token.access_token))
     return res
 
 # Create your views here.   
@@ -23,8 +24,7 @@ class SignupView(APIView):
         username = email.split('@')[0]  # 이메일에서 @ 앞부분을 사용하여 사용자 이름 생성
 
         # request.data에 username 추가
-        #request.data['username'] = username
-
+        request.data['username'] = username
         user_serializer = UserSerializer(data=request.data)
         if user_serializer.is_valid(raise_exception=True):
             user = user_serializer.save()

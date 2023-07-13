@@ -5,7 +5,7 @@ from rest_framework.serializers import ValidationError
 class UserSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "email", "password", "is_superuser"]
+        fields = ["id", "email", "password", "is_superuser", "username"]
 
     def validate(self, attrs):
         email = attrs.get('email', '')
