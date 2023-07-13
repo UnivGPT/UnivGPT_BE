@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'comment',
     'input',
     'prompt',
+    'option',
 ]
 
 MIDDLEWARE = [
