@@ -6,6 +6,7 @@ from rest_framework import status
 from .serializers import PromptSerializer
 from .models import Prompt, Like
 from .serializers import PromptSerializer
+from category.models import Category
 
 
 
@@ -18,18 +19,28 @@ class PromptListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def post(self, request):
+        author = request.user
         title = request.data.get('title')
         description = request.data.get('description')
         content = request.data.get('content')
+        categories = request.data.get('category')
 
+        if not author.is_authenticated:
+            return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
+        
         if not title or not content or not description:
             return Response({"detail": "fields missing."}, status=status.HTTP_400_BAD_REQUEST)
         
-        prompt = Prompt.objects.create(title=title, description=description, content=content, view=0)
-        serializer = PromptSerializer(prompt)
+        prompt = Prompt.objects.create(title=title, description=description, content=content, view=0, author=author)
 
+        prompt.category.clear()
+        #의도 불확실..
+        for category in categories:
+            if not Category.objects.filter(name=category).exists():
+                prompt.category.add(Category.objects.get(name=category))
+        serializer = PromptSerializer(prompt)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-      
+
 
 class PromptDetailView(APIView):
     def get(self, request, prompt_id):
@@ -45,6 +56,8 @@ class PromptDetailView(APIView):
             prompt = Prompt.objects.get(id=prompt_id)
         except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        if request.user != prompt.author:
+            return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
         prompt.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
@@ -52,14 +65,15 @@ class PromptDetailView(APIView):
         try:
             prompt = Prompt.objects.get(id = prompt_id)
         except:
-            if not prompt.request.title or not prompt.request.description:
+            if not prompt.request.title or not prompt.request.description or not prompt.request.category:
                 return Response({"detail": "[title, description] fields missing."})
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         prompt.title = request.data.get('title') or prompt.title
         prompt.description = request.data.get('description') or prompt.description
         prompt.content = request.data.get('content') or prompt.content
+        prompt.category = request.data.get('category') or prompt.category
         prompt.save()
-        return Response("{prompt.title}으로 수정되었음.", status=status.HTTP_200_OK)
+        return Response(f"{prompt.title}으로 수정되었음.", status=status.HTTP_200_OK)
 
 class LikeView(APIView):
     def post(self, request, prompt_id):
