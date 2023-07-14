@@ -25,6 +25,9 @@ class PromptListView(APIView):
         content = request.data.get('content')
         categories = request.data.get('category')
 
+        print("==================")
+        print(categories)
+
         if not author.is_authenticated:
             return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
         
@@ -36,7 +39,7 @@ class PromptListView(APIView):
         prompt.category.clear()
 
         for category in categories:
-            if not Category.objects.filter(name=category).exists():
+            if Category.objects.filter(name=category).exists():
                 prompt.category.add(Category.objects.get(name=category))
         serializer = PromptSerializer(prompt)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
