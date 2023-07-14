@@ -11,7 +11,7 @@ from .serializers import CommentSerializer
 
 class CommentListView(APIView):
     def get(self, request):
-        prompt_id = request.GET.get('prompt')
+        prompt_id = request.data.get('prompt')
         if not prompt_id:
             return Response({"detail": "missing fields ['prompt']"}, status=status.HTTP_400_BAD_REQUEST)
         if not Prompt.objects.filter(id=prompt_id).exists():
