@@ -13,7 +13,6 @@ class InputListView(APIView):
     def post(self, request):
         name = request.data.get('name')
         type = request.data.get('type')
-        options = request.data.get('options')
         content = request.data.get('content')
         prompt = request.data.get('prompt')
 
@@ -23,13 +22,15 @@ class InputListView(APIView):
         if not Prompt.objects.filter(id=prompt).exists():
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         
-        input = Input.objects.create(name=name, type=type, options=options, content=content, prompt=prompt)
+        targetPrompt = Prompt.objects.filter(id=prompt).first()
+        
+        input = Input.objects.create(name=name, type=type, content=content, prompt=targetPrompt)
         serializer = InputSerializer(input)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     
     def get(self, request):
-        prompt_id = request.GET.get('prompt')
+        prompt_id = request.data.get('prompt')
         if not prompt_id:
             return Response({"detail": "missing fields ['prompt']"}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -41,17 +42,18 @@ class InputListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 class InputDetailView(APIView):
-    def delete(self, request, prompt_id):
+    def delete(self, request, input_id):
         if not request.user.is_authenticated:
             return Response({"detail": "Authentication denied"}, status=status.HTTP_401_UNAUTHORIZED)
         
         try:
-            input = Input.objects.get(id=prompt_id)
+            input = Input.objects.get(id=input_id)
         except:
             return Response({"detail": "Input Not found."}, status=status.HTTP_404_NOT_FOUND)
-        prompt = Prompt.objects.get(id=prompt_id)
+        prompt_id = input.prompt.id
+        prompt = Prompt.objects.filter(id=prompt_id).first()
         if request.user != prompt.author:
-            return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"detail": "You are not an author of this prompt."}, status=status.HTTP_401_UNAUTHORIZED)
 
         
         input.delete()
