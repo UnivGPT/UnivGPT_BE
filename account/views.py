@@ -73,6 +73,8 @@ class UserInfoView(APIView):
     def patch(self, request):
         user = request.user
         user_serializer = UserSerializer(user, data=request.data, partial=True)
+        if request.data['email'] != user.email:
+            return Response({"detail": "email should not be changed."}, status=status.HTTP_400_BAD_REQUEST)
         if not user_serializer.is_valid(raise_exception=True):
             return Response({"detail": "user data validation error"}, status=status.HTTP_400_BAD_REQUEST)
         user_serializer.save()
