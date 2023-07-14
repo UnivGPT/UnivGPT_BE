@@ -23,6 +23,6 @@ urlpatterns = [
     path('api/account/', include('account.urls')),
     path('api/category/', include('category.urls')),
     path('api/input/', include('input.urls')),
-    path('api/comment/', include('comment.urls'))
-    # path('api/option/', include('option.urls'))
+    path('api/comment/', include('comment.urls')),
+    path('api/option/', include('option.urls'))
 ]
