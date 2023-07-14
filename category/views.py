@@ -19,7 +19,7 @@ class CategoryListView(APIView):
     def post(self, request):
         if not request.user.is_authenticated:
             return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
-        if not request.user.data.is_superuser:
+        if not request.user.is_superuser:
             return Response({"detail": "not a superuser"}, status=status.HTTP_401_UNAUTHORIZED)
         name = request.data.get('name')
         if not name:
