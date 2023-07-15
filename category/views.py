@@ -39,6 +39,19 @@ class CategoryDetailView(APIView):
         prompts = Prompt.objects.filter(category=category)
         serializer = PromptSerializer(instance=prompts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def delete(self, request, category_id):
+        if not request.user.is_authenticated:
+            return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
+        if not request.user.is_superuser:
+            return Response({"detail": "not a superuser"}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            category = Category.objects.get(id=category_id)
+        except:
+            return Response({"detail": "Not found"}, status=status.HTTP_404_NOT_FOUND)
+        category.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 
 
