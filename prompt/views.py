@@ -68,13 +68,18 @@ class PromptDetailView(APIView):
         try:
             prompt = Prompt.objects.get(id = prompt_id)
         except:
-            if not prompt.request.title or not prompt.request.description or not prompt.request.category:
-                return Response({"detail": "[title, description] fields missing."})
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        if not request.data['title'] or not request.data['description']:
+            return Response({"detail": "[title, description] fields missing."})
         prompt.title = request.data.get('title') or prompt.title
         prompt.description = request.data.get('description') or prompt.description
         prompt.content = request.data.get('content') or prompt.content
-        prompt.category = request.data.get('category') or prompt.category
+        category_names = request.data.get('category')
+        if category_names:
+            categories = Category.objects.filter(name__in=category_names)
+            if len(categories) != len(category_names):
+                return Response({"detail": "invalid category"}, status=status.HTTP_400_BAD_REQUEST)
+            prompt.category.set(categories)
         prompt.save()
         return Response(f"{prompt.title}으로 수정되었음.", status=status.HTTP_200_OK)
 
