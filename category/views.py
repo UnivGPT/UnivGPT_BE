@@ -33,11 +33,11 @@ class CategoryListView(APIView):
 class CategoryDetailView(APIView):
     def get(self, request, category_id):
         try:
-            Category.objects.get(id=category_id)
+            category = Category.objects.get(id=category_id)
         except:
             return Response({"detail": "Provided category does not exist."}, status=status.HTTP_404_NOT_FOUND)
-        categories = Category.objects.filter(categories=category_id)
-        serializer = PromptSerializer(instance=categories, many=True)
+        prompts = Prompt.objects.filter(category=category)
+        serializer = PromptSerializer(instance=prompts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
