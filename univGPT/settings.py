@@ -28,6 +28,8 @@ environ.Env.read_env(
 
 SECRET_KEY =env('SECRET_KEY')
 
+NAVER_CLIENT_ID=env('NAVER_CLIENT_ID')
+NAVER_SECRET_KEY=env('NAVER_SECRET_KEY')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -50,6 +52,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    "corsheaders",
     'account',
     'category',
     'comment',
@@ -61,12 +64,30 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # 위치 변경
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+
+CORS_ALLOWED_ORIGINS= [ # (헤더) Access-Control-Allow-Origin 에 담을 주소들
+    'http://127.0.0.1:8000', 
+    'http://localhost:3000',
+    'https://nid.naver.com',
+]
+
+CORS_ALLOW_CREDENTIALS = True # cookie를 주고받으려면 얘를 True로 설정해야 해요.
+CORS_ALLOW_HEADERS = (
+    "accept",
+    "authorization",
+    "content-type",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+)
 
 ROOT_URLCONF = 'univGPT.urls'
 

@@ -1,4 +1,7 @@
 from django.shortcuts import render
+import requests
+from django.conf import settings
+
 from django.contrib.auth.models import User
 from .serializers import UserSerializer
 
@@ -79,3 +82,35 @@ class UserInfoView(APIView):
             return Response({"detail": "user data validation error"}, status=status.HTTP_400_BAD_REQUEST)
         user_serializer.save()
         return Response(user_serializer.data, status=status.HTTP_200_OK)
+
+class SocialLoginCallbackView(APIView):
+    def get(self, request):
+        state = request.GET.get('state')
+        code = request.GET.get('code')
+
+        naver_client_id = settings.NAVER_CLIENT_ID
+        naver_client_secret = settings.NAVER_SECRET_KEY
+        
+        token_url = f'https://nid.naver.com/oauth2.0/token?client_id={naver_client_id}&client_secret={naver_client_secret}&grant_type=authorization_code&state={state}&code={code}'
+        
+        print("================")
+        response = requests.get(token_url)
+        token_data = response.json()
+        print("============")
+        print("token type data:", type(token_data))
+
+
+        headers = {
+            'Authorization': f'Bearer {token_data.get("access_token")}'
+        }
+
+        print("============")
+        print(type(token_data.get("access_token")))
+
+        print(type(token_data["access_token"]))
+        api_url = 'https://openapi.naver.com/v1/nid/me'
+        api_response = Response(requests.get(api_url, headers=headers))
+
+        print("api_response", api_response.data.json())
+
+        return (Response(api_response.data.json(), status=status.HTTP_200_OK))
