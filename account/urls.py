@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import SignupView, SigninView, LogoutView, TokenRefreshView, UserInfoView, SocialLoginCallbackView, GoogleLoginView
+from .views import SignupView, SigninView, LogoutView, TokenRefreshView, UserInfoView, SocialLoginCallbackView, KakaoLoginCallbackView, GoogleLoginView
 
 app_name = 'account'
 urlpatterns = [
@@ -9,5 +9,6 @@ urlpatterns = [
     path("refresh/", TokenRefreshView.as_view()),
     path("info/", UserInfoView.as_view()),
     path("socials/", SocialLoginCallbackView.as_view()),
+    path("kakao/", KakaoLoginCallbackView.as_view())
     path("google/",GoogleLoginView.as_view())
 ]

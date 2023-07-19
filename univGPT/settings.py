@@ -31,8 +31,13 @@ SECRET_KEY =env('SECRET_KEY')
 NAVER_CLIENT_ID=env('NAVER_CLIENT_ID')
 NAVER_SECRET_KEY=env('NAVER_SECRET_KEY')
 
+KAKAO_CLIENT_ID=env('KAKAO_CLIENT_ID')
+KAKAO_SECRET_KEY=env('KAKAO_SECRET_KEY')
+KAKAO_REDIRECT_URI=env('KAKAO_REDIRECT_URI')
+
 GOOGLE_CLIENT_ID=env('GOOGLE_CLIENT_ID')
 GOOGLE_SECRET=env('GOOGLE_SECRET')
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
