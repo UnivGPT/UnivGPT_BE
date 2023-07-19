@@ -97,7 +97,6 @@ class UserInfoView(APIView):
         return Response(user_serializer.data, status=status.HTTP_200_OK)
 
 class SocialLoginCallbackView(APIView):
-
     def get(self, request):
         state = request.GET.get('state')
         code = request.GET.get('code')
@@ -148,6 +147,7 @@ class SocialLoginCallbackView(APIView):
 class KakaoLoginCallbackView(APIView):
     def get(self, request):
         code = request.GET.get('code')
+        print("code", code)
 
         kakao_client_id = settings.KAKAO_CLIENT_ID
         kakao_client_secret = settings.KAKAO_SECRET_KEY
@@ -158,7 +158,8 @@ class KakaoLoginCallbackView(APIView):
         response = requests.get(token_url)
         token_data = response.json()
 
-      
+        print("***********")
+        print(token_data)
 
 
         headers = {
@@ -170,16 +171,17 @@ class KakaoLoginCallbackView(APIView):
         api_url = 'https://kapi.kakao.com/v2/user/me'
         api_response = Response(requests.get(api_url, headers=headers))
 
-        print("api_response", api_response.data.json())
 
         user_profile = api_response.data.json().get('kakao_account')
+        print("================")
+        print(user_profile)
 
         email = user_profile.get("email")
 
+        # return Response(email)
 
         try:
             user = User.objects.get(email=email)
-            print("existing user using social login")
             return set_token_on_response_cookie(user)
         except:
             username = email.split('@')[0]
@@ -192,10 +194,14 @@ class KakaoLoginCallbackView(APIView):
             }
 
             user_serializer = UserSerializer(data=data)
-            if user_serializer.is_valid(raise_exception=True):
+            try:
+                user_serializer = UserSerializer(data=data)
+                user_serializer.is_valid(raise_exception=True)
                 user = user_serializer.save()
-            return set_token_on_response_cookie(user)
-
+                return set_token_on_response_cookie(user)
+            except Exception as e:
+                print("Error saving user:", e)
+                return Response({"detail": "Failed to save user"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class GoogleLoginView(APIView):
