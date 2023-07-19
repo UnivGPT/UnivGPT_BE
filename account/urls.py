@@ -9,6 +9,6 @@ urlpatterns = [
     path("refresh/", TokenRefreshView.as_view()),
     path("info/", UserInfoView.as_view()),
     path("socials/", SocialLoginCallbackView.as_view()),
-    path("kakao/", KakaoLoginCallbackView.as_view())
+    path("kakao/", KakaoLoginCallbackView.as_view()),
     path("google/",GoogleLoginView.as_view())
 ]
