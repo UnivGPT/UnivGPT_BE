@@ -6,6 +6,9 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from .serializers import UserSerializer
 
+import random
+import string
+
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -21,6 +24,11 @@ def set_token_on_response_cookie(user: User) -> Response:
     res.set_cookie('refresh_token', value=str(token))
     res.set_cookie('access_token', value=str(token.access_token))
     return res
+
+def generate_random_string(length=8):
+    characters = string.ascii_letters + string.digits + string.punctuation
+    random_string = ''.join(random.choice(characters) for _ in range(length))
+    return random_string
 
 # Create your views here.   
 class SignupView(APIView):
@@ -85,6 +93,7 @@ class UserInfoView(APIView):
         return Response(user_serializer.data, status=status.HTTP_200_OK)
 
 class SocialLoginCallbackView(APIView):
+
     def get(self, request):
         state = request.GET.get('state')
         code = request.GET.get('code')
@@ -100,12 +109,38 @@ class SocialLoginCallbackView(APIView):
         headers = {
             'Authorization': f'Bearer {token_data.get("access_token")}'
         }
+
+        api_url = 'https://openapi.naver.com/v1/nid/me'
+        api_response = Response(requests.get(api_url, headers=headers))
+
+        user_profile = api_response.data.json().get('response')
+        print(user_profile)
+
+        email = user_profile.get("email")
+
+        try:
+            user = User.objects.get(email=email)
+            print("existing user using social login")
+            return set_token_on_response_cookie(user)
+        except:
+            username = email.split('@')[0]
+            password = generate_random_string()
+
+            data = {
+                "email": email,
+                "username": username,
+                "password": password,
+            }
+
+            user_serializer = UserSerializer(data=data)
+            if user_serializer.is_valid(raise_exception=True):
+                user = user_serializer.save()
+            return set_token_on_response_cookie(user)
         api_url = 'https://openapi.naver.com/v1/nid/me'
         api_response = Response(requests.get(api_url, headers=headers))
 
         return (Response(api_response.data.json(), status=status.HTTP_200_OK))
 
-GOOGLE_CALLBACK_URI = "http://localhost:3000/api/auth/callback/google/"
 
 class GoogleLoginView(APIView):
     def get(self, request):
