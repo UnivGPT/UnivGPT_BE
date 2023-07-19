@@ -1,5 +1,6 @@
 from django.shortcuts import render
 import requests
+
 from django.conf import settings
 
 from django.contrib.auth.models import User
@@ -11,6 +12,9 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
 
+import random
+import string
+
 def set_token_on_response_cookie(user: User) -> Response:
     token = RefreshToken.for_user(user)
     user = User.objects.get(username=user)
@@ -20,6 +24,11 @@ def set_token_on_response_cookie(user: User) -> Response:
     res.set_cookie('refresh_token', value=str(token))
     res.set_cookie('access_token', value=str(token.access_token))
     return res
+
+def generate_random_string(length=8):
+    characters = string.ascii_letters + string.digits + string.punctuation
+    random_string = ''.join(random.choice(characters) for _ in range(length))
+    return random_string
 
 # Create your views here.   
 class SignupView(APIView):
@@ -93,10 +102,8 @@ class SocialLoginCallbackView(APIView):
         
         token_url = f'https://nid.naver.com/oauth2.0/token?client_id={naver_client_id}&client_secret={naver_client_secret}&grant_type=authorization_code&state={state}&code={code}'
         
-        print("================")
         response = requests.get(token_url)
         token_data = response.json()
-        print("============")
         print("token type data:", type(token_data))
 
 
@@ -104,7 +111,6 @@ class SocialLoginCallbackView(APIView):
             'Authorization': f'Bearer {token_data.get("access_token")}'
         }
 
-        print("============")
         print(type(token_data.get("access_token")))
 
         print(type(token_data["access_token"]))
@@ -114,3 +120,56 @@ class SocialLoginCallbackView(APIView):
         print("api_response", api_response.data.json())
 
         return (Response(api_response.data.json(), status=status.HTTP_200_OK))
+    
+class KakaoLoginCallbackView(APIView):
+    def get(self, request):
+        code = request.GET.get('code')
+
+        kakao_client_id = settings.KAKAO_CLIENT_ID
+        kakao_client_secret = settings.KAKAO_SECRET_KEY
+        kakao_redirect_uri = settings.KAKAO_REDIRECT_URI
+        
+        token_url = f'https://kauth.kakao.com/oauth/token?grant_type=authorization_code&client_id={kakao_client_id}&client_secret={kakao_client_secret}&code={code}&redirect_uri={kakao_redirect_uri}'
+        
+        response = requests.get(token_url)
+        print("************")
+        print(response)
+        token_data = response.json()
+
+        print("token type data:", type(token_data))
+
+
+        headers = {
+            'Authorization': f'Bearer {token_data.get("access_token")}',
+            'Content-type': "application/x-www-form-urlencoded;charset=utf-8"
+        }
+
+
+        api_url = 'https://kapi.kakao.com/v2/user/me'
+        api_response = Response(requests.get(api_url, headers=headers))
+
+        print("api_response", api_response.data.json())
+
+        user_profile = api_response.data.json().get('kakao_account')
+
+        email = user_profile.get("email")
+
+
+        try:
+            user = User.objects.get(email=email)
+            print("existing user using social login")
+            return set_token_on_response_cookie(user)
+        except:
+            username = email.split('@')[0]
+            password = generate_random_string()
+
+            data = {
+                "email": email,
+                "username": username,
+                "password": password,
+            }
+
+            user_serializer = UserSerializer(data=data)
+            if user_serializer.is_valid(raise_exception=True):
+                user = user_serializer.save()
+            return set_token_on_response_cookie(user)
