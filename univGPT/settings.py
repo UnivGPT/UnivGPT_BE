@@ -33,6 +33,7 @@ NAVER_SECRET_KEY=env('NAVER_SECRET_KEY')
 
 GOOGLE_CLIENT_ID=env('GOOGLE_CLIENT_ID')
 GOOGLE_SECRET=env('GOOGLE_SECRET')
+GOOGLE_REDIRECT_URI=env('GOOGLE_REDIRECT_URI')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
