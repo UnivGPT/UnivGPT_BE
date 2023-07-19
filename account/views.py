@@ -108,18 +108,12 @@ class SocialLoginCallbackView(APIView):
 GOOGLE_CALLBACK_URI = "http://localhost:3000/api/auth/callback/google/"
 
 class GoogleLoginView(APIView):
-
-    def google_login(self, request):
-        scope = "https://www.googleapis.com/auth/userinfo.email"
-        client_id = settings.GOOGLE_CLIENT_ID
-        return redirect(f"https://accounts.google.com/o/oauth2/v2/auth?client_id={client_id}&response_type=code&redirect_uri={GOOGLE_CALLBACK_URI}&scope={scope}")
-
-    def google_callback(request):
+    def get(self, request):
         client_id = settings.GOOGLE_CLIENT_ID
         client_secret = settings.GOOGLE_SECRET
         code = request.GET.get('code')
         
-        token_req = requests.post(f"https://oauth2.googleapis.com/token?client_id={client_id}&client_secret={client_secret}&code={code}&grant_type=authorization_code&redirect_uri={GOOGLE_CALLBACK_URI}&state={state}")
+        token_req = requests.post(f"https://oauth2.googleapis.com/token?client_id={client_id}&client_secret={client_secret}&code={code}&grant_type=authorization_code&redirect_uri={GOOGLE_CALLBACK_URI}")
         token_req_json = token_req.json()
         # error = token_req_json.get("error")
 
@@ -138,7 +132,6 @@ class GoogleLoginView(APIView):
             user = User.objects.get(email=email)
             refresh = RefreshToken.for_user(user)
             refresh["email"] = user.email
-            refresh["nickname"] = user.nickname
             return Response(
                 {
                     "refresh": str(refresh),
@@ -148,12 +141,11 @@ class GoogleLoginView(APIView):
             )
 
         except:
-            user = User.objects.create_user(email=email, nickname=nickname)
+            user = User.objects.create_user(email=email)
             user.set_unusable_password()
             user.save()
             refresh = RefreshToken.for_user(user)
             refresh["email"] = user.email
-            refresh["nickname"] = user.nickname
             return Response(
                 {
                     "refresh": str(refresh),
