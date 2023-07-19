@@ -1,7 +1,8 @@
-from django.shortcuts import render
-import requests
+from django.shortcuts import render, redirect
+import requests, os
 from django.conf import settings
-
+from json import JSONDecodeError
+from django.http import JsonResponse
 from django.contrib.auth.models import User
 from .serializers import UserSerializer
 
@@ -93,24 +94,62 @@ class SocialLoginCallbackView(APIView):
         
         token_url = f'https://nid.naver.com/oauth2.0/token?client_id={naver_client_id}&client_secret={naver_client_secret}&grant_type=authorization_code&state={state}&code={code}'
         
-        print("================")
         response = requests.get(token_url)
         token_data = response.json()
-        print("============")
-        print("token type data:", type(token_data))
-
 
         headers = {
             'Authorization': f'Bearer {token_data.get("access_token")}'
         }
-
-        print("============")
-        print(type(token_data.get("access_token")))
-
-        print(type(token_data["access_token"]))
         api_url = 'https://openapi.naver.com/v1/nid/me'
         api_response = Response(requests.get(api_url, headers=headers))
 
-        print("api_response", api_response.data.json())
-
         return (Response(api_response.data.json(), status=status.HTTP_200_OK))
+
+GOOGLE_CALLBACK_URI = "http://localhost:3000/api/auth/callback/google/"
+
+class GoogleLoginView(APIView):
+    def get(self, request):
+        client_id = settings.GOOGLE_CLIENT_ID
+        client_secret = settings.GOOGLE_SECRET
+        code = request.GET.get('code')
+        
+        token_req = requests.post(f"https://oauth2.googleapis.com/token?client_id={client_id}&client_secret={client_secret}&code={code}&grant_type=authorization_code&redirect_uri={GOOGLE_CALLBACK_URI}")
+        token_req_json = token_req.json()
+        # error = token_req_json.get("error")
+
+        # if error is not None:
+        #     raise JSONDecodeError(error)
+        
+        access_token = token_req_json.get('access_token')
+
+        user_data_req = requests.get("https://www.googleapis.com/oauth2/v1/userinfo",
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+        user_data_json = user_data_req.json()
+        email = user_data_json.get('email')
+
+        try:
+            user = User.objects.get(email=email)
+            refresh = RefreshToken.for_user(user)
+            refresh["email"] = user.email
+            return Response(
+                {
+                    "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                },
+                status=status.HTTP_200_OK
+            )
+
+        except:
+            user = User.objects.create_user(email=email)
+            user.set_unusable_password()
+            user.save()
+            refresh = RefreshToken.for_user(user)
+            refresh["email"] = user.email
+            return Response(
+                {
+                    "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                },
+                status=status.HTTP_200_OK
+            )
