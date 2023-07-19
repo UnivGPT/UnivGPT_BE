@@ -1,10 +1,14 @@
-from django.shortcuts import render
-import requests
+from django.shortcuts import render, redirect
+import requests, os
 
 from django.conf import settings
-
+from json import JSONDecodeError
+from django.http import JsonResponse
 from django.contrib.auth.models import User
 from .serializers import UserSerializer
+
+import random
+import string
 
 from rest_framework import status
 from rest_framework.views import APIView
@@ -93,6 +97,7 @@ class UserInfoView(APIView):
         return Response(user_serializer.data, status=status.HTTP_200_OK)
 
 class SocialLoginCallbackView(APIView):
+
     def get(self, request):
         state = request.GET.get('state')
         code = request.GET.get('code')
@@ -104,23 +109,42 @@ class SocialLoginCallbackView(APIView):
         
         response = requests.get(token_url)
         token_data = response.json()
-        print("token type data:", type(token_data))
-
 
         headers = {
             'Authorization': f'Bearer {token_data.get("access_token")}'
         }
 
-        print(type(token_data.get("access_token")))
-
-        print(type(token_data["access_token"]))
         api_url = 'https://openapi.naver.com/v1/nid/me'
         api_response = Response(requests.get(api_url, headers=headers))
 
-        print("api_response", api_response.data.json())
+        user_profile = api_response.data.json().get('response')
+        print(user_profile)
+
+        email = user_profile.get("email")
+
+        try:
+            user = User.objects.get(email=email)
+            print("existing user using social login")
+            return set_token_on_response_cookie(user)
+        except:
+            username = email.split('@')[0]
+            password = generate_random_string()
+
+            data = {
+                "email": email,
+                "username": username,
+                "password": password,
+            }
+
+            user_serializer = UserSerializer(data=data)
+            if user_serializer.is_valid(raise_exception=True):
+                user = user_serializer.save()
+            return set_token_on_response_cookie(user)
+        api_url = 'https://openapi.naver.com/v1/nid/me'
+        api_response = Response(requests.get(api_url, headers=headers))
 
         return (Response(api_response.data.json(), status=status.HTTP_200_OK))
-    
+
 class KakaoLoginCallbackView(APIView):
     def get(self, request):
         code = request.GET.get('code')
@@ -132,11 +156,9 @@ class KakaoLoginCallbackView(APIView):
         token_url = f'https://kauth.kakao.com/oauth/token?grant_type=authorization_code&client_id={kakao_client_id}&client_secret={kakao_client_secret}&code={code}&redirect_uri={kakao_redirect_uri}'
         
         response = requests.get(token_url)
-        print("************")
-        print(response)
         token_data = response.json()
 
-        print("token type data:", type(token_data))
+      
 
 
         headers = {
@@ -173,3 +195,53 @@ class KakaoLoginCallbackView(APIView):
             if user_serializer.is_valid(raise_exception=True):
                 user = user_serializer.save()
             return set_token_on_response_cookie(user)
+
+
+
+class GoogleLoginView(APIView):
+    def get(self, request):
+        client_id = settings.GOOGLE_CLIENT_ID
+        client_secret = settings.GOOGLE_SECRET
+        code = request.GET.get('code')
+        
+        token_req = requests.post(f"https://oauth2.googleapis.com/token?client_id={client_id}&client_secret={client_secret}&code={code}&grant_type=authorization_code&redirect_uri={GOOGLE_CALLBACK_URI}")
+        token_req_json = token_req.json()
+        # error = token_req_json.get("error")
+
+        # if error is not None:
+        #     raise JSONDecodeError(error)
+        
+        access_token = token_req_json.get('access_token')
+
+        user_data_req = requests.get("https://www.googleapis.com/oauth2/v1/userinfo",
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+        user_data_json = user_data_req.json()
+        email = user_data_json.get('email')
+
+        try:
+            user = User.objects.get(email=email)
+            refresh = RefreshToken.for_user(user)
+            refresh["email"] = user.email
+            return Response(
+                {
+                    "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                },
+                status=status.HTTP_200_OK
+            )
+
+        except:
+            user = User.objects.create_user(email=email)
+            user.set_unusable_password()
+            user.save()
+            refresh = RefreshToken.for_user(user)
+            refresh["email"] = user.email
+            return Response(
+                {
+                    "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                },
+                status=status.HTTP_200_OK
+            )
+
