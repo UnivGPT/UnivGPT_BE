@@ -228,27 +228,20 @@ class GoogleLoginView(APIView):
 
         try:
             user = User.objects.get(email=email)
-            refresh = RefreshToken.for_user(user)
-            refresh["email"] = user.email
-            return Response(
-                {
-                    "refresh": str(refresh),
-                    "access": str(refresh.access_token),
-                },
-                status=status.HTTP_200_OK
-            )
-
+            print("existing user using social login")
+            return set_token_on_response_cookie(user)
+        
         except:
-            user = User.objects.create_user(email=email)
-            user.set_unusable_password()
-            user.save()
-            refresh = RefreshToken.for_user(user)
-            refresh["email"] = user.email
-            return Response(
-                {
-                    "refresh": str(refresh),
-                    "access": str(refresh.access_token),
-                },
-                status=status.HTTP_200_OK
-            )
+            username = email.split('@')[0]
+            password = generate_random_string()
 
+            data = {
+                "email": email,
+                "username": username,
+                "password": password,
+            }
+
+            user_serializer = UserSerializer(data=data)
+            if user_serializer.is_valid(raise_exception=True):
+                user = user_serializer.save()
+            return set_token_on_response_cookie(user)
