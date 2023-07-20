@@ -25,8 +25,8 @@ def set_token_on_response_cookie(user: User) -> Response:
     print("Found user", user)
     user_serializer = UserSerializer(user)
     res = Response(user_serializer.data, status=status.HTTP_200_OK)
-    res.set_cookie('refresh_token', value=str(token))
-    res.set_cookie('access_token', value=str(token.access_token))
+    res.set_cookie('refresh_token', value=str(token), samesite='None', secure=True)
+    res.set_cookie('access_token', value=str(token.access_token), samesite='None', secure=True)
     return res
 
 def generate_random_string(length=8):
