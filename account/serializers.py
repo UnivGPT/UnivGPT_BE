@@ -1,6 +1,7 @@
 from rest_framework.serializers import ModelSerializer
 from django.contrib.auth.models import User
 from rest_framework.serializers import ValidationError
+from .models import UserProfile
 
 class UserSerializer(ModelSerializer):
     class Meta:
@@ -9,10 +10,18 @@ class UserSerializer(ModelSerializer):
 
     def validate(self, attrs):
         email = attrs.get('email', '')
+        username = attrs.get('username', '')
         password = attrs.get('password', '')
-        if not (email and password):
-            raise ValidationError({"detail": "[email, password] fields missing."})
+        if not (email and username and password):
+            raise ValidationError({"detail": "[email, username, password] fields missing."})
         return attrs
+    
+class UserProfileSerializer(ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = UserProfile
+        fields = "__all__"
 
 class UserIdUsernameSerializer(ModelSerializer):
     class Meta:
