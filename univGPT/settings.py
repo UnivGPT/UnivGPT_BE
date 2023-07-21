@@ -37,6 +37,7 @@ KAKAO_REDIRECT_URI=env('KAKAO_REDIRECT_URI')
 
 GOOGLE_CLIENT_ID=env('GOOGLE_CLIENT_ID')
 GOOGLE_SECRET=env('GOOGLE_SECRET')
+GOOGLE_REDIRECT_URI=env('GOOGLE_REDIRECT_URI')
 
 
 # Quick-start development settings - unsuitable for production

@@ -188,6 +188,7 @@ class SocialLoginCallbackView(APIView):
                 users_2 = User.objects.filter(socials=2)
                 user = users_2.get(username=username)
                 # user = User.objects.get(username=username)
+
                 return set_token_on_response_cookie(user)
             except:
                 password = generate_random_string()
@@ -245,21 +246,23 @@ class SocialLoginCallbackView(APIView):
                 users_3 = User.objects.filter(socials=3)
                 user = users_3.get(username=username)
                 # user = User.objects.get(username=username)
+
                 print("existing user using social login")
                 return set_token_on_response_cookie(user)
             
             except:
                 password = generate_random_string()
 
-                print(username)
+
                 data = {
                     "email": email,
                     "username": username,
                     "password": password,
                 }
+
                 
                 user_serializer = UserSerializer(data=data)
-                # if user_serializer.is_valid(raise_exception=True):
+                
                 try:
                     if user_serializer.is_valid(raise_exception=True):
                         print("user is valid")
@@ -269,8 +272,10 @@ class SocialLoginCallbackView(APIView):
                     errors = user_serializer.errors
                     print(errors)
 
+
                 user_profile = UserProfile.objects.create(
                         user=user,
                         socials=socials
                 )    
+
                 return set_token_on_response_cookie(user)
