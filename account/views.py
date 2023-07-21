@@ -177,9 +177,18 @@ class SocialLoginCallbackView(APIView):
             email = user_profile.get("email")
             username = user_profile.get("profile").get("nickname")
 
+            same_user_name = User.objects.filter(username=username)
+            if same_user_name.exists():
+                same_user_num = len(same_user_name)
+                username = username+f'@{same_user_num}'
+            else:
+                print("same username does not exist")
+            
             try:
                 users_2 = User.objects.filter(socials=2)
                 user = users_2.get(username=username)
+                # user = User.objects.get(username=username)
+
                 return set_token_on_response_cookie(user)
             except:
                 password = generate_random_string()
@@ -223,14 +232,27 @@ class SocialLoginCallbackView(APIView):
             email = user_data_json.get('email')
             username = user_data_json.get('name')
 
+            same_user_name = User.objects.filter(username=username)
+            if same_user_name.exists():
+                print("same username exists")
+                same_user_num = len(same_user_name)
+                print(same_user_num)
+                username = username+f'@{same_user_num}'
+                print(username)
+            else:
+                print("same username does not exist")
+
             try:
                 users_3 = User.objects.filter(socials=3)
                 user = users_3.get(username=username)
+                # user = User.objects.get(username=username)
+
                 print("existing user using social login")
                 return set_token_on_response_cookie(user)
             
             except:
                 password = generate_random_string()
+
 
                 data = {
                     "email": email,
@@ -238,11 +260,22 @@ class SocialLoginCallbackView(APIView):
                     "password": password,
                 }
 
+                
                 user_serializer = UserSerializer(data=data)
-                if user_serializer.is_valid(raise_exception=True):
-                    user = user_serializer.save()
+                
+                try:
+                    if user_serializer.is_valid(raise_exception=True):
+                        print("user is valid")
+
+                        user = user_serializer.save()
+                except:
+                    errors = user_serializer.errors
+                    print(errors)
+
+
                 user_profile = UserProfile.objects.create(
                         user=user,
                         socials=socials
                 )    
+
                 return set_token_on_response_cookie(user)
