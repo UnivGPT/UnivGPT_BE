@@ -8,7 +8,38 @@ from .models import Prompt, Like
 from .serializers import PromptSerializer
 from category.models import Category
 
+import os
+import openai
 
+openai.organization = "org-s7qbonKPMvyOvD0dferoVi07"
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# class GPTView(APIView):
+#     def update_chat(messages, role, content):
+#         messages.append({"role": role, "content": content})
+#         return messages
+    
+#     def get_response(messages):
+#         response = openai.ChatCompletiion.create(
+#         model = "gpt-3.5-turbo",
+#         messages = messages
+#     )
+#         return response['choices'][0]['message']['content']
+
+class GPTView(APIView):
+    def get(self, request):
+        prompt_message = request.data.get("content")
+        if not prompt_message:
+            return Response({"detail": "content missing"}, status=status.HTTP_400_BAD_REQUEST)
+        completion = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt_message}]
+        )
+
+        answer = completion.choices[0].message
+        print(answer)
+
+        return Response(answer, status=status.HTTP_200_OK)
 
 # Create your views here.
 class PromptListView(APIView):
