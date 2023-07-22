@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 import requests
+from django.contrib.auth.validators import UnicodeUsernameValidator
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -8,6 +9,7 @@ from .models import UserProfile
 
 import random
 import string
+import re
 
 from rest_framework import status
 from rest_framework.views import APIView
@@ -28,6 +30,18 @@ def generate_random_string(length=8):
     characters = string.ascii_letters + string.digits + string.punctuation
     random_string = ''.join(random.choice(characters) for _ in range(length))
     return random_string
+
+def check_valid_username(username):
+    validator = UnicodeUsernameValidator()
+    try:
+        validator(username)
+        return True
+    except:
+        return False
+    
+def remove_special_characters(input_string):
+    # 정규표현식으로 특수문자를 찾아서 제거
+    return re.sub(r'[^\w]', '', input_string)
 
 # Create your views here.   
 class SignupView(APIView):
@@ -153,6 +167,8 @@ class SocialLoginCallbackView(APIView):
             
         elif socials == 2:
 
+            usernum = str(UserProfile.objects.all().count())
+
             kakao_client_id = settings.KAKAO_CLIENT_ID
             kakao_client_secret = settings.KAKAO_SECRET_KEY
             kakao_redirect_uri = settings.KAKAO_REDIRECT_URI
@@ -170,33 +186,43 @@ class SocialLoginCallbackView(APIView):
             api_url = 'https://kapi.kakao.com/v2/user/me'
             api_response = Response(requests.get(api_url, headers=headers))
 
+            socials_id = api_response.data.json().get("id")
+
             user_profile = api_response.data.json().get('kakao_account')
             print("================")
             print(user_profile)
 
             email = user_profile.get("email")
             username = user_profile.get("profile").get("nickname")
+            if not check_valid_username(username):
+                print("not valid")
+                username = remove_special_characters(username)
+            
+            print("Changed username", username)
 
-            same_user_name = User.objects.filter(username=username)
-            if same_user_name.exists():
-                same_user_num = len(same_user_name)
-                username = username+f'@{same_user_num}'
-            else:
-                print("same username does not exist")
+
+            # socials_id = user_data_json.get('id')
+
+            # same_user_name = User.objects.filter(username=username)
+            # if same_user_name.exists():
+            #     same_user_num = len(same_user_name)
+            #     username = username+f'@{same_user_num}'
+            # else:
+            #     print("same username does not exist")
             
             try:
-                users_2 = User.objects.filter(socials=2)
-                user = users_2.get(username=username)
-                # user = User.objects.get(username=username)
-
-                return set_token_on_response_cookie(user)
+                # users_2 = User.objects.filter(socials=2)
+                # user = users_2.get(username=username)
+                user = UserProfile.objects.get(socials_id=socials_id)
+                print("existing user")
+                return set_token_on_response_cookie(user.user)
             except:
                 password = generate_random_string()
 
                 data = {
                     "email": email,
-                    "username": username,
                     "password": password,
+                    "username": usernum
                 }
 
                 user_serializer = UserSerializer(data=data)
@@ -204,13 +230,16 @@ class SocialLoginCallbackView(APIView):
                 user = user_serializer.save()
                 user_profile = UserProfile.objects.create(
                     user=user,
-                    socials=socials
+                    socials_id=socials_id,
+                    socials_username=username
                 )    
                 return set_token_on_response_cookie(user)
 
         elif socials == 3:
             print("=====================")
             print("social is 3")
+            usernum = str(UserProfile.objects.all().count())
+
             client_id = settings.GOOGLE_CLIENT_ID
             client_secret = settings.GOOGLE_SECRET
             redirect_uri = settings.GOOGLE_REDIRECT_URI
@@ -230,25 +259,32 @@ class SocialLoginCallbackView(APIView):
             user_data_json = user_data_req.json()
             print(user_data_json)
             email = user_data_json.get('email')
-            username = user_data_json.get('name')
+            username = user_data_json.get('given_name')
+            if not check_valid_username(username):
+                print("not valid")
+                username = remove_special_characters(username)
+            
+            print("Changed username", username)
 
-            same_user_name = User.objects.filter(username=username)
-            if same_user_name.exists():
-                print("same username exists")
-                same_user_num = len(same_user_name)
-                print(same_user_num)
-                username = username+f'@{same_user_num}'
-                print(username)
-            else:
-                print("same username does not exist")
+
+            socials_id = user_data_json.get('id')
+
+            # same_user_name = User.objects.filter(username=username)
+            # if same_user_name.exists():
+            #     print("same username exists")
+            #     same_user_num = len(same_user_name)
+            #     print(same_user_num)
+            #     username = username+f'@{same_user_num}'
+            #     print(username)
+            # else:
+            #     print("same username does not exist")
 
             try:
-                users_3 = User.objects.filter(socials=3)
-                user = users_3.get(username=username)
-                # user = User.objects.get(username=username)
-
+                # users_3 = User.objects.filter(socials=3)
+                # user = users_3.get(username=username)
+                user = UserProfile.objects.get(socials_id=socials_id)
                 print("existing user using social login")
-                return set_token_on_response_cookie(user)
+                return set_token_on_response_cookie(user.user)
             
             except:
                 password = generate_random_string()
@@ -256,26 +292,17 @@ class SocialLoginCallbackView(APIView):
 
                 data = {
                     "email": email,
-                    "username": username,
                     "password": password,
+                    "username": usernum
                 }
 
                 
                 user_serializer = UserSerializer(data=data)
-                
-                try:
-                    if user_serializer.is_valid(raise_exception=True):
-                        print("user is valid")
-
-                        user = user_serializer.save()
-                except:
-                    errors = user_serializer.errors
-                    print(errors)
-
-
+                user_serializer.is_valid(raise_exception=True)
+                user = user_serializer.save()
                 user_profile = UserProfile.objects.create(
-                        user=user,
-                        socials=socials
+                    user=user,
+                    socials_id=socials_id,
+                    socials_username=username
                 )    
-
                 return set_token_on_response_cookie(user)
