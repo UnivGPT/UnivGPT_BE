@@ -48,15 +48,13 @@ class SignupView(APIView):
     def post(self, request):
         email = request.data.get('email')
         username = request.data.get('username')
-        socials = request.data.get('socials')
 
         user_serializer = UserSerializer(data=request.data)
         if user_serializer.is_valid(raise_exception=True):
             user = user_serializer.save()
 
         user_profile = UserProfile.objects.create(
-                    user=user,
-                    socials=socials
+                    user=user
         )    
         return set_token_on_response_cookie(user)
 
