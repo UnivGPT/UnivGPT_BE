@@ -7,12 +7,13 @@ from .serializers import PromptSerializer
 from .models import Prompt, Like
 from .serializers import PromptSerializer
 from category.models import Category
+from django.conf import settings
 
 import os
 import openai
 
-openai.organization = "org-s7qbonKPMvyOvD0dferoVi07"
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.organization = settings.OPENAI_ORGANIZATION_KEY
+openai.api_key = settings.OPENAI_API_KEY
 
 # class GPTView(APIView):
 #     def update_chat(messages, role, content):
