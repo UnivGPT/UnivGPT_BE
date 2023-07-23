@@ -13,9 +13,9 @@ class InputListView(APIView):
     def post(self, request):
         name = request.data.get('name')
         type = request.data.get('type')
-        content = request.data.get('content')
+        # content = request.data.get('content')
         prompt = request.data.get('prompt')
-        placeholder = request.data.get('placeholding')
+        placeholding = request.data.get('placeholding')
 
         if not request.user.is_authenticated:
           return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -25,7 +25,7 @@ class InputListView(APIView):
         
         targetPrompt = Prompt.objects.filter(id=prompt).first()
         
-        input = Input.objects.create(name=name, type=type, content=content, prompt=targetPrompt, placeholder=placeholder)
+        input = Input.objects.create(name=name, type=type, prompt=targetPrompt, placeholding=placeholding)
         serializer = InputSerializer(input)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

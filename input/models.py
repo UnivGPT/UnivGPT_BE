@@ -7,8 +7,7 @@ class Input(models.Model):
     prompt = models.ForeignKey(Prompt, on_delete=models.CASCADE)
     name = models.CharField(max_length=16)
     type = models.IntegerField(default=1)
-    content = models.TextField()
-    placeholder = models.CharField(max_length=50, blank=True)
+    placeholding = models.CharField(max_length=50, blank=True)
 
     def __str__(self):
         return self.name

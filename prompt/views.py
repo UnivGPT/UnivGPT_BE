@@ -57,9 +57,6 @@ class PromptListView(APIView):
         content = request.data.get('content')
         categories = request.data.get('category')
 
-        print("==================")
-        print(categories)
-
         if not author.is_authenticated:
             return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
         
