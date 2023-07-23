@@ -109,6 +109,16 @@ class UserInfoView(APIView):
             return Response({"detail": "user data validation error"}, status=status.HTTP_400_BAD_REQUEST)
         user_serializer.save()
         return Response(user_serializer.data, status=status.HTTP_200_OK)
+    
+    def post(self, request):
+        user = request.user
+        userprofile = user.userprofile
+        if request.data['password'] == user.password:
+            return Response({"detail": "password match."}, status=status.HTTP_200_OK)
+        else:
+            if userprofile.socials_id != "a":
+                return Response({"detail": "socials login user is not allowed"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"detail": "password doesn't match."}, status=status.HTTP_400_BAD_REQUEST)
 
 class SocialLoginCallbackView(APIView):
     def get(self, request):
