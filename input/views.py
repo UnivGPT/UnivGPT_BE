@@ -28,19 +28,6 @@ class InputListView(APIView):
         input = Input.objects.create(name=name, type=type, prompt=targetPrompt, placeholding=placeholding)
         serializer = InputSerializer(input)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    
-    def get(self, request):
-        prompt_id = request.data.get('prompt')
-        if not prompt_id:
-            return Response({"detail": "missing fields ['prompt']"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        if not Prompt.objects.filter(id=prompt_id).exists():
-            return Response({"detail": "No prompts found."}, status=status.HTTP_404_NOT_FOUND)
-        
-        inputs = Input.objects.filter(prompt_id=prompt_id)
-        serializer = InputSerializer(inputs, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
     
 class InputDetailView(APIView):
     def delete(self, request, input_id):
