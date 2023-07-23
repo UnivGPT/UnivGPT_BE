@@ -11,15 +11,6 @@ from .serializers import OptionSerializer
 # Create your views here.
 
 class OptionListView(APIView):
-    def get(self, request):
-        input_id = request.data.get('input')
-        if not input_id:
-            return Response({"detail": "missing fields ['input']"}, status=status.HTTP_400_BAD_REQUEST)
-        if not Input.objects.filter(id=input_id).exists():
-            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-        options = Option.objects.filter(input=input_id)
-        serializer = OptionSerializer(options, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
     
     def post(self, request):
         name = request.data.get('name')
@@ -96,4 +87,17 @@ class OptionDetailView(APIView):
             return Response({"detail": "data validation error"}, status=status.HTTP_400_BAD_REQUEST)
         
         serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class OptionFromInputView(APIView):
+    def post(self, request):
+        print("=================")
+        print(request.data)
+        input_id = request.data.get('input')
+        if not input_id:
+            return Response({"detail": "missing fields ['input']"}, status=status.HTTP_400_BAD_REQUEST)
+        if not Input.objects.filter(id=input_id).exists():
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        options = Option.objects.filter(input=input_id)
+        serializer = OptionSerializer(options, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
