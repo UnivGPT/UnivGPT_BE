@@ -8,6 +8,10 @@ from .models import Prompt, Like
 from .serializers import PromptSerializer
 from category.models import Category
 from django.conf import settings
+from input.models import Input
+from option.models import Option
+from input.serializers import InputSerializer
+from option.serializers import OptionSerializer
 
 import os
 import openai
@@ -80,8 +84,15 @@ class PromptDetailView(APIView):
             prompt = Prompt.objects.get(id=prompt_id)
         except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        inputs = Input.objects.filter(prompt_id=prompt_id)
+        input_serializer = InputSerializer(inputs, many=True)
         serializer = PromptSerializer(prompt)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        response_data = {
+            "prompt": serializer.data,
+            "inputs": input_serializer.data
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
         
     def delete(self, request, prompt_id):
         try:
