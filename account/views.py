@@ -4,7 +4,7 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from .serializers import UserSerializer, UserProfileSerializer
+from .serializers import UserSerializer, UserProfileSerializer, SecureUserSerializer
 from .models import UserProfile
 
 import random
@@ -119,6 +119,14 @@ class UserInfoView(APIView):
             if userprofile.socials_id != "a":
                 return Response({"detail": "socials login user is not allowed"}, status=status.HTTP_401_UNAUTHORIZED)
             return Response({"detail": "password doesn't match."}, status=status.HTTP_400_BAD_REQUEST)
+
+class SecureInfoView(APIView):
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"detail": "로그인 후 다시 시도해주세요."}, status=status.HTTP_401_UNAUTHORIZED)
+        user = request.user
+        serializer = SecureUserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class SocialLoginCallbackView(APIView):
     def get(self, request):
