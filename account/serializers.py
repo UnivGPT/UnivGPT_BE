@@ -27,3 +27,16 @@ class UserIdUsernameSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username"]
+
+class SecureUserSerializer(ModelSerializer):
+    profile = UserProfileSerializer(source='userprofile', read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'profile']
+
+    def get_fields(self):
+        fields = super().get_fields()
+        fields['profile'].fields.pop('user')
+        fields['profile'].fields.pop('socials_id')
+        return fields
