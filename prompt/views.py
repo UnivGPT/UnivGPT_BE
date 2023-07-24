@@ -84,6 +84,9 @@ class PromptDetailView(APIView):
             prompt = Prompt.objects.get(id=prompt_id)
         except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        prompt.view += 1
+        prompt.save()
+        print(prompt.view)
         inputs = Input.objects.filter(prompt_id=prompt_id)
         input_serializer = InputSerializer(inputs, many=True)
         serializer = PromptSerializer(prompt)
