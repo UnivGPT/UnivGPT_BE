@@ -18,7 +18,7 @@ class InputListView(APIView):
         placeholding = request.data.get('placeholding')
 
         if not request.user.is_authenticated:
-          return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
         
         if not Prompt.objects.filter(id=prompt).exists():
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
