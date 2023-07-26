@@ -20,7 +20,7 @@ openai.organization = settings.OPENAI_ORGANIZATION_KEY
 openai.api_key = settings.OPENAI_API_KEY
 
 class GPTView(APIView):
-    def get(self, request):
+    def post(self, request):
         prompt_message = request.data.get("content")
         if not prompt_message:
             return Response({"detail": "content missing"}, status=status.HTTP_400_BAD_REQUEST)
@@ -30,7 +30,6 @@ class GPTView(APIView):
         )
 
         answer = completion.choices[0].message
-        print(answer)
 
         return Response(answer, status=status.HTTP_200_OK)
 
