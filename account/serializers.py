@@ -1,4 +1,4 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, SerializerMethodField
 from django.contrib.auth.models import User
 from rest_framework.serializers import ValidationError
 from .models import UserProfile
@@ -24,9 +24,17 @@ class UserProfileSerializer(ModelSerializer):
         fields = "__all__"
 
 class UserIdUsernameSerializer(ModelSerializer):
+    socials_username = SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ["id", "username"]
+        fields = ["id", "username", "socials_username"]
+
+    def get_socials_username(self, obj):
+        try:
+            return obj.userprofile.socials_username
+        except UserProfile.DoesNotExist:
+            return None
 
 class SecureUserSerializer(ModelSerializer):
     profile = UserProfileSerializer(source='userprofile', read_only=True)
