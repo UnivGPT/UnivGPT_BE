@@ -63,31 +63,31 @@ class OptionDetailView(APIView):
         option.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
-    def patch(self, request, option_id):
-        if not request.user.is_authenticated:
-          return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
-        option = Option.objects.get(id=option_id)
+    # def patch(self, request, option_id):
+    #     if not request.user.is_authenticated:
+    #       return Response({"detail": "Authentication credentials not provided"}, status=status.HTTP_401_UNAUTHORIZED)
+    #     option = Option.objects.get(id=option_id)
 
-        user = request.user
+    #     user = request.user
 
-        input_id = option.input.id
-        input = Input.objects.get(id=input_id)
+    #     input_id = option.input.id
+    #     input = Input.objects.get(id=input_id)
 
-        prompt_id = input.prompt.id
-        prompt = Prompt.objects.get(id=prompt_id)
+    #     prompt_id = input.prompt.id
+    #     prompt = Prompt.objects.get(id=prompt_id)
         
-        if user != prompt.author:
-            return Response({"detail": "not the author of this prompt"}, status=status.HTTP_401_UNAUTHORIZED)
+    #     if user != prompt.author:
+    #         return Response({"detail": "not the author of this prompt"}, status=status.HTTP_401_UNAUTHORIZED)
         
-        if request.data['input'] != input_id:
-            return Response({"detail": "input id should not be changed."}, status=status.HTTP_400_BAD_REQUEST)
+    #     if request.data['input'] != input_id:
+    #         return Response({"detail": "input id should not be changed."}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = OptionSerializer(option, data=request.data, partial=True)
-        if not serializer.is_valid():
-            return Response({"detail": "data validation error"}, status=status.HTTP_400_BAD_REQUEST)
+    #     serializer = OptionSerializer(option, data=request.data, partial=True)
+    #     if not serializer.is_valid():
+    #         return Response({"detail": "data validation error"}, status=status.HTTP_400_BAD_REQUEST)
         
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    #     serializer.save()
+    #     return Response(serializer.data, status=status.HTTP_200_OK)
     
 class OptionFromInputView(APIView):
     def post(self, request):

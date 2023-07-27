@@ -110,6 +110,18 @@ class PromptDetailView(APIView):
             if len(categories) != len(category_names):
                 return Response({"detail": "invalid category"}, status=status.HTTP_400_BAD_REQUEST)
             prompt.category.set(categories)
+
+        inputs  = Input.objects.filter(prompt=prompt_id)
+        inputIdList = [input.id for input in inputs ]
+
+        options = Option.objects.filter(input__in=inputIdList)
+        for option in options:
+            option.delete()
+
+
+        for input in inputs:
+            input.delete()
+
         prompt.save()
         return Response(f"{prompt.title}으로 수정되었음.", status=status.HTTP_200_OK)
 
