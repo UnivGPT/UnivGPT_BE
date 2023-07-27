@@ -117,7 +117,7 @@ class UserInfoView(APIView):
             return Response({"detail": "password match."}, status=status.HTTP_200_OK)
         else:
             if userprofile.socials_id != "a":
-                return Response({"detail": "socials login user is not allowed"}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({"detail": "socials login user is not allowed"}, status=status.HTTP_406_NOT_ACCEPTABLE)
             return Response({"detail": "password doesn't match."}, status=status.HTTP_400_BAD_REQUEST)
 
 class SecureInfoView(APIView):
