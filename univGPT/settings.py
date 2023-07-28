@@ -51,6 +51,8 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'port-0-univgpt-be-rt92alkmbg4m8.sel4.cloudtype.app']
 
+
+
 CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:3000',
     'http://localhost:3000',
