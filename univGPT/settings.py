@@ -49,7 +49,13 @@ OPENAI_API_KEY=env('OPENAI_API_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'port-0-univgpt-be-rt92alkmbg4m8.sel4.cloudtype.app']
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:3000',
+    'http://localhost:3000',
+    'https://port-0-univgpt-be-rt92alkmbg4m8.sel4.cloudtype.app'
+]
 
 
 # Application definition
