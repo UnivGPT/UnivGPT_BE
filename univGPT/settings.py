@@ -56,7 +56,8 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'port-0-univgpt-be-rt92alkmbg4m8.sel4
 CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:3000',
     'http://localhost:3000',
-    'https://port-0-univgpt-be-rt92alkmbg4m8.sel4.cloudtype.app'
+    'https://port-0-univgpt-be-rt92alkmbg4m8.sel4.cloudtype.app',
+    'https://web-univgpt-fe-rt92alkmbg4m8.sel4.cloudtype.app'
 ]
 
 
@@ -96,7 +97,7 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS= [ # (헤더) Access-Control-Allow-Origin 에 담을 주소들
     'http://127.0.0.1:8000', 
     'http://localhost:3000',
-    'https://nid.naver.com',
+    'https://web-univgpt-fe-rt92alkmbg4m8.sel4.cloudtype.app'
 ]
 
 CORS_ALLOW_CREDENTIALS = True # cookie를 주고받으려면 얘를 True로 설정해야 해요.
