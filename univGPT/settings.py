@@ -51,6 +51,8 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'port-0-univgpt-be-rt92alkmbg4m8.sel4.cloudtype.app']
 
+SESSION_COOKIE_DOMAIN='.cloudtype.app'
+
 
 
 CSRF_TRUSTED_ORIGINS = [
