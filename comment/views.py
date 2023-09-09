@@ -50,5 +50,6 @@ class CommentDetailView(APIView):
             return Response({"detail": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
 
         comment.delete()
+        print("Hello")
         return Response(status=status.HTTP_204_NO_CONTENT)
 
