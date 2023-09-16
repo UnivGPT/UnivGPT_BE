@@ -100,4 +100,5 @@ class OptionFromInputView(APIView):
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         options = Option.objects.filter(input=input_id)
         serializer = OptionSerializer(options, many=True)
+        print("option")
         return Response(serializer.data, status=status.HTTP_200_OK)
